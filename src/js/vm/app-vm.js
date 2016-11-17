@@ -52,6 +52,8 @@ var app = app || {};
         </div>
       `);
       app.infoWindow.open(app.map, venue.marker);
+      if(window.innerWidth >= 600)
+        self.menuOff();
     };
     
     this.filterVenues = function(vm, e){
