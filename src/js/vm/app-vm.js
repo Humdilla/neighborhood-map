@@ -4,30 +4,37 @@ var app = app || {};
   function AppViewModel(){
     
     var self = this;
-    
     this.searchMenu = $('#search-menu');
-    
     this.venues = [];
     this.filteredVenues = ko.observableArray();
     this.selected = null;
     
+    /**
+     * Slide the menu off-screen
+     */
     this.menuOn = function(){
       self.searchMenu.addClass('on-screen');
       self.searchMenu.removeClass('off-screen');
     };
     
+    /**
+     * Slide the menu on-screen
+     */
     this.menuOff = function(){
       self.searchMenu.addClass('off-screen');
       self.searchMenu.removeClass('on-screen');
     };
     
+    /**
+     * Toggle the menu on/off-screen
+     */
     this.toggleMenu = function(){
       self.searchMenu.toggleClass('off-screen');
       self.searchMenu.toggleClass('on-screen');
     };
     
     /**
-     * Show an infowindow with the locations information
+     * Show an infowindow with the venue's information
      * @param {Venue} venue
      */
     this.showInfo = function(venue){
@@ -37,12 +44,13 @@ var app = app || {};
       venue.marker.setAnimation(google.maps.Animation.BOUNCE);
       self.selected = venue;
       
-      if(venue.photos.groups[0]){
+      // Put together photo url
+      try{
         var photo = venue.photos.groups[0].items[0];
         var url = photo.prefix + photo.width + 'x' + photo.height + photo.suffix;
       }
-      else{
-        var url = 'img/no-img.svg'
+      catch(e){
+        var url = 'img/no-img.svg';
       }
       
       app.infoWindow.setContent(`
@@ -56,6 +64,11 @@ var app = app || {};
         self.menuOff();
     };
     
+    /**
+     * Filter out venues by name and make only the remaining one's visible
+     * @param {ViewModel} vm
+     * @param {Event} e
+     */
     this.filterVenues = function(vm, e){
       ko.utils.arrayPushAll(this.filteredVenues, this.venues.splice(0));
       self.filteredVenues.remove(function(venue){

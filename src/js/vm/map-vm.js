@@ -11,5 +11,4 @@ var initMap = function(){
   app.infoWindow = new google.maps.InfoWindow({
     maxWidth: 300,
   });
-  app.infoWindow.open(app.map);
 };
