@@ -39,7 +39,6 @@ $(document).ready(function(e){
               item.venue.marker.addListener('click', (function(venue){
                 return function(e){
                   app.appViewModel.showInfo(venue);
-                  app.appViewModel.highlight(venue);
                 };
               })(item.venue));
               
