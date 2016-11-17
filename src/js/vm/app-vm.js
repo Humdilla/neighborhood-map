@@ -55,7 +55,7 @@ var app = app || {};
     };
     
     this.filterVenues = function(vm, e){
-      ko.utils.arrayPushAll(this.filteredLocations, this.venues.splice(0));
+      ko.utils.arrayPushAll(this.filteredVenues, this.venues.splice(0));
       self.filteredVenues.remove(function(venue){
         return !venue.name.toUpperCase().startsWith(e.target.value.toUpperCase());
       }).forEach(function(venue){
