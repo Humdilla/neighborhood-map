@@ -1,16 +1,10 @@
 var app = app || {};
 
-(function(){
-  function AppViewModel(){
-    
-    var self = this;
-    this.searchMenu = $('#search-menu');
-    this.venues = [];
-    this.filteredVenues = ko.observableArray();
-    this.selected = null;
+function initViewModel(venues, markers){
+  function AppViewModel(venues, markers){
     
     /**
-     * Slide the menu off-screen
+     * @description Slide the menu off-screen
      */
     this.menuOn = function(){
       self.searchMenu.addClass('on-screen');
@@ -18,7 +12,7 @@ var app = app || {};
     };
     
     /**
-     * Slide the menu on-screen
+     * @description Slide the menu on-screen
      */
     this.menuOff = function(){
       self.searchMenu.addClass('off-screen');
@@ -26,7 +20,7 @@ var app = app || {};
     };
     
     /**
-     * Toggle the menu on/off-screen
+     * @description Toggle the menu on/off-screen
      */
     this.toggleMenu = function(){
       self.searchMenu.toggleClass('off-screen');
@@ -34,15 +28,18 @@ var app = app || {};
     };
     
     /**
-     * Show an infowindow with the venue's information
+     * @description Show an infowindow with the venue's information
      * @param {Venue} venue
      */
-    this.showInfo = function(venue){
-      if(self.selected){
-        self.selected.marker.setAnimation(null);
+    this.showInfo = function(venue, index){
+      console.log(venue);
+      if(self.selected != null){
+        this.markers[self.selected].setAnimation(null);
+        this.highlightOff(self.selected);
       }
-      venue.marker.setAnimation(google.maps.Animation.BOUNCE);
-      self.selected = venue;
+      this.markers[index].setAnimation(google.maps.Animation.BOUNCE);
+      this.highlightOn(index);
+      this.selected = index;
       
       // Put together photo url
       try{
@@ -59,30 +56,62 @@ var app = app || {};
           <img src="${url}" class="iwindow-img">
         </div>
       `);
-      app.infoWindow.open(app.map, venue.marker);
+      app.infoWindow.open(app.map, this.markers[index]);
       if(window.innerWidth < 600)
         self.menuOff();
     };
     
     /**
-     * Filter out venues by name and make only the remaining one's visible
+     * @description Filter out venues by name and make only the remaining one's visible
      * @param {ViewModel} vm
      * @param {Event} e
      */
     this.filterVenues = function(vm, e){
-      ko.utils.arrayPushAll(this.filteredVenues, this.venues.splice(0));
-      self.filteredVenues.remove(function(venue){
-        return !venue.name.toUpperCase().startsWith(e.target.value.toUpperCase());
-      }).forEach(function(venue){
-        self.venues.push(venue);
-        venue.marker.setVisible(false);
+      this.filteredVenues.splice(0);
+      this.venues.forEach(function(venue, i){
+        if(venue.name.toUpperCase().startsWith(e.target.value.toUpperCase())){
+          self.filteredVenues.push(venue);
+          self.markers[i].setVisible(true);
+        }
+        else{
+          self.markers[i].setVisible(false);
+        }
       });
-      this.filteredVenues().forEach(function(venue){
-        venue.marker.setVisible(true);
-      });
+      app.infoWindow.close();
     };
+    
+    /**
+     * @description Highlight the list item at the given index
+     * @param {Integer} index
+     */
+    this.highlightOn = function(index){
+      $(this.searchList.children()[index]).addClass('selected');
+    };
+    
+    this.highlightOff = function(index){
+      $(this.searchList.children()[index]).removeClass('selected');
+    };
+    
+    var self = this;
+    this.searchMenu = $('#search-menu');
+    this.searchList = $('#search-list');
+    this.venues = venues;
+    this.filteredVenues = ko.observableArray();
+    venues.forEach(function(venue){
+      self.filteredVenues.push(venue);
+    });
+    this.markers = markers;
+    // Listen for clicks on markers
+    this.markers.forEach(function(marker, i){
+      marker.addListener('click', (function(i){
+        return function(e){
+          self.showInfo(self.venues[i], i);
+        }
+      })(i));
+    });
+    this.selected = null;
   };
-
-  app.appViewModel = new AppViewModel();
+  
+  app.appViewModel = new AppViewModel(venues, markers);
   ko.applyBindings(app.appViewModel);
-})();
+}

@@ -83,7 +83,13 @@ body {
 #map {
   left: calc(300px * 0.1);
   width: calc(100% - 300px * 0.1);
-  height: 100vh;
+  height: 97vh;
+}
+
+#footer {
+  font-size: 0.8em;
+  float: right;
+  height: 3vh;
 }
 
 .iwindow {
