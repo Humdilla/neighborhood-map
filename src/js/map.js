@@ -9,19 +9,9 @@ var initMap = function(){
     zoom: 14
   });
   app.infoWindow = new google.maps.InfoWindow({
-    maxWidth: 300,
+    maxWidth: 300
   });
   app.infoWindow.addListener('closeclick', function(){
-    app.appViewModel.markers[app.appViewModel.selected].setAnimation(null);
+    app.appViewModel.markers[app.appViewModel.selected()].setAnimation(null);
   });
 };
-
-$.ajax('https://maps.googleapis.com/maps/api/js?key=AIzaSyCWec9GP8Gz3Mnu8S4gyt5DuPdmCScANXk&callback=initMap',
-{
-  complete: function(response){
-    
-  },
-  error: function(response){
-    alert('Could not connect to Google Maps');
-  }
-});

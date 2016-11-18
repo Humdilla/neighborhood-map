@@ -1,20 +1,20 @@
 @echo off
 :: Minify CSS
-del dist\css\*.min.css
+del dist\css\*.css
 for %%f in (src\css\*) do (
-  curl -X POST -s --data-urlencode input@%%f -o dist\css\%%~nf.min.css https://cssminifier.com/raw
+  curl -X POST -s --data-urlencode input@%%f -o dist\css\%%~nf.css https://cssminifier.com/raw
 )
 :: Minify JS
-del dist\js\*.min.js
+del dist\js\*.js
 for %%f in (src\js\*) do (
-  curl -X POST -s --data-urlencode input@%%f -o dist\js\%%~nf.min.js https://javascript-minifier.com/raw
+  curl -X POST -s --data-urlencode input@%%f -o dist\js\%%~nf.js https://javascript-minifier.com/raw
 )
-del dist\js\lib\*.min.js
+del dist\js\lib\*.js
 for %%f in (src\js\lib\*) do (
-  curl -X POST -s --data-urlencode input@%%f -o dist\js\lib\%%~nf.min.js https://javascript-minifier.com/raw
+  curl -X POST -s --data-urlencode input@%%f -o dist\js\lib\%%~nf.js https://javascript-minifier.com/raw
 )
-del dist\js\vm\*.min.js
+del dist\js\vm\*.js
 for %%f in (src\js\vm\*) do (
-  curl -X POST -s --data-urlencode input@%%f -o dist\js\lib\%%~nf.min.js https://javascript-minifier.com/raw
+  curl -X POST -s --data-urlencode input@%%f -o dist\js\vm\%%~nf.js https://javascript-minifier.com/raw
 )
 @echo on

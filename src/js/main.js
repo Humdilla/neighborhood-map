@@ -1,6 +1,5 @@
 var app = app || {};
 
-
 (function(){
   //Get current position, along with nearby locations from foursquare
   if(navigator.geolocation){
@@ -13,12 +12,12 @@ var app = app || {};
         '&client_secret=JBJ0MVCMYJ50LMPMRX4RRMFWBLBYQZULSIEADTXFKZ0SZVAR'+
         '&v=20161116&m=foursquare&radius=3000&venuePhotos=1', {
           // Populate venues list and make a map marker for each one
-          complete: function(result, status){
-            var venues = [];
-            var markers = [];
+          success: function(result, status){
             try{
+              var venues = [];
+              var markers = [];
               var bounds = new google.maps.LatLngBounds();
-              result.responseJSON.response.groups[0].items.forEach(function(item, i){
+              result.response.groups[0].items.forEach(function(item, i){
                 venues.push(item.venue);
                 
                 var marker = new google.maps.Marker({
@@ -43,13 +42,19 @@ var app = app || {};
               app.map.fitBounds(bounds);
             }
             catch(e){
-              initViewModel(venues, markers);
+              initViewModel([], []);
+              alert('Could not connect to Google Maps');
             }
+          },
+          error: function(result, status){
+            initViewModel([], []);
+            alert('Could not connect to Foursquare');
           }
         });
       },
       function(error){
-        alert('Could not connect to Foursquare');
+        initViewModel([], []);
+        alert('Could not get your position');
       },
       {}
     );

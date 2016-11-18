@@ -30,16 +30,9 @@ function initViewModel(venues, markers){
     /**
      * @description Show an infowindow with the venue's information
      * @param {Venue} venue
+     * @param {Integer} index
      */
     this.showInfo = function(venue, index){
-      console.log(venue);
-      if(self.selected != null){
-        this.markers[self.selected].setAnimation(null);
-        this.highlightOff(self.selected);
-      }
-      this.markers[index].setAnimation(google.maps.Animation.BOUNCE);
-      this.highlightOn(index);
-      this.selected = index;
       
       // Put together photo url
       try{
@@ -50,12 +43,11 @@ function initViewModel(venues, markers){
         var url = 'img/no-img.svg';
       }
       
-      app.infoWindow.setContent(`
-        <div class="iwindow">
-          <h2 class="iwindow-title">${venue.name}</h2>
-          <img src="${url}" class="iwindow-img">
-        </div>
-      `);
+      app.infoWindow.setContent(
+        '<div class="iwindow">'+
+          '<h2 class="iwindow-title">'+venue.name+'</h2>'+
+          '<img src="'+url+'" class="iwindow-img">'+
+        '</div>');
       app.infoWindow.open(app.map, this.markers[index]);
       if(window.innerWidth < 600)
         self.menuOff();
@@ -77,19 +69,9 @@ function initViewModel(venues, markers){
           self.markers[i].setVisible(false);
         }
       });
-      app.infoWindow.close();
-    };
-    
-    /**
-     * @description Highlight the list item at the given index
-     * @param {Integer} index
-     */
-    this.highlightOn = function(index){
-      $(this.searchList.children()[index]).addClass('selected');
-    };
-    
-    this.highlightOff = function(index){
-      $(this.searchList.children()[index]).removeClass('selected');
+      try{
+        app.infoWindow.close();
+      }catch(e){}
     };
     
     var self = this;
@@ -105,11 +87,20 @@ function initViewModel(venues, markers){
     this.markers.forEach(function(marker, i){
       marker.addListener('click', (function(i){
         return function(e){
-          self.showInfo(self.venues[i], i);
+          self.selected(i);
         }
       })(i));
     });
-    this.selected = null;
+    // Set up selected observable and subscribers
+    this.selected = ko.observable(null);
+    this.selected.subscribe(function(oldVal){
+      if(oldVal != null)
+        self.markers[oldVal].setAnimation(null);
+    }, null, 'beforeChange');
+    this.selected.subscribe(function(newVal){
+      self.showInfo(self.venues[newVal], newVal);
+      self.markers[newVal].setAnimation(google.maps.Animation.BOUNCE);
+    });
   };
   
   app.appViewModel = new AppViewModel(venues, markers);
