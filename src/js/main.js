@@ -1,62 +1,87 @@
 var app = app || {};
 
 (function(){
-  //Get current position, along with nearby locations from foursquare
-  if(navigator.geolocation){
+  // Attempt to load google maps
+  $.getScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyCWec9GP8Gz3Mnu8S4gyt5DuPdmCScANXk')
+  .done(function(){
+    app.map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat:41.727824, lng:-71.271180},
+      zoom: 14
+    });
+    app.infoWindow = new google.maps.InfoWindow({
+      maxWidth: 300
+    });
+    app.infoWindow.addListener('closeclick', function(){
+      app.appViewModel.markers[app.appViewModel.selected()].setAnimation(null);
+    });
+  })
+  .fail(function(){
+    alert('Unable to load Google Maps');
+  });
+  // Attempt to load nearby venues from FourSquare
+  app.myLat = null;
+  app.myLng = null;
+  app.venues = [];
+  app.markers = [];
+  if(typeof navigator.geolocation !== 'undefined'){
     navigator.geolocation.getCurrentPosition(
       function(position){
-        var lat = position.coords.latitude;
-        var lng = position.coords.longitude;
-        $.ajax('https://api.foursquare.com/v2/venues/explore?ll='+lat+','+lng+
+        app.myLat = position.coords.latitude;
+        app.myLng = position.coords.longitude;
+        $.ajax('https://api.foursquare.com/v2/venues/explore?ll='+app.myLat+','+app.myLng+
         '&client_id=FWFDODROAPV4MOMLR21M1JQE3H2C4HTFN0OAQFCNAOJC11OC'+
         '&client_secret=JBJ0MVCMYJ50LMPMRX4RRMFWBLBYQZULSIEADTXFKZ0SZVAR'+
         '&v=20161116&m=foursquare&radius=3000&venuePhotos=1', {
-          // Populate venues list and make a map marker for each one
           success: function(result, status){
-            try{
-              var venues = [];
-              var markers = [];
+            var setupMarkers = function(){
               var bounds = new google.maps.LatLngBounds();
               result.response.groups[0].items.forEach(function(item, i){
-                venues.push(item.venue);
+                app.venues.push(item.venue);
                 
                 var marker = new google.maps.Marker({
                   position: {lat:item.venue.location.lat, lng:item.venue.location.lng},
                   map: app.map
                 });
-                markers.push(marker);
+                app.markers.push(marker);
                 
                 // extend bounds to include new marker
                 bounds.extend(marker.getPosition());
               });
               
-              initViewModel(venues, markers);
-              
-              // Some stuff we can't do with css
-              if(window.innerWidth >= 600)
-                app.appViewModel.menuOn();
-              else
-                app.appViewModel.menuOff();
-              
               // fit map to contain markers
               app.map.fitBounds(bounds);
+            };
+            //If google maps is not loaded, give it a little time.
+            if(typeof google !== 'undefined'){
+              setupMarkers();
             }
-            catch(e){
-              initViewModel([], []);
-              alert('Could not connect to Google Maps');
+            else{
+              setTimeout(6000, function(){
+                console.log('angus');
+                if(typeof google !== 'undefined')
+                  setupMarkers();
+              });
             }
           },
           error: function(result, status){
-            initViewModel([], []);
             alert('Could not connect to Foursquare');
+          },
+          complete: function(){
+            initViewModel(app.venues, app.markers);
+            
+            if(window.innerWidth >= 600)
+              app.appViewModel.menuOn(true);
+            else
+              app.appViewModel.menuOn(false);
           }
         });
       },
       function(error){
-        initViewModel([], []);
         alert('Could not get your position');
       },
       {}
     );
   }
+  else
+    alert('Could not get your position');
 })();

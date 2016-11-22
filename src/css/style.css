@@ -23,12 +23,11 @@ body {
   transform: translateZ(0);
 }
 
-.off-screen {
-  left: calc(-300px + 300px * 0.1);
-}
-
 .on-screen {
   left: 0px;
+}
+.off-screen {
+  left: calc(-300px + 300px * 0.1);
 }
 
 #search-content {
@@ -86,7 +85,7 @@ body {
   height: 97vh;
 }
 
-#footer {
+footer {
   font-size: 0.8em;
   float: right;
   height: 3vh;

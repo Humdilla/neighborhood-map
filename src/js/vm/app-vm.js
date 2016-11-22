@@ -4,30 +4,6 @@ function initViewModel(venues, markers){
   function AppViewModel(venues, markers){
     
     /**
-     * @description Slide the menu off-screen
-     */
-    this.menuOn = function(){
-      self.searchMenu.addClass('on-screen');
-      self.searchMenu.removeClass('off-screen');
-    };
-    
-    /**
-     * @description Slide the menu on-screen
-     */
-    this.menuOff = function(){
-      self.searchMenu.addClass('off-screen');
-      self.searchMenu.removeClass('on-screen');
-    };
-    
-    /**
-     * @description Toggle the menu on/off-screen
-     */
-    this.toggleMenu = function(){
-      self.searchMenu.toggleClass('off-screen');
-      self.searchMenu.toggleClass('on-screen');
-    };
-    
-    /**
      * @description Show an infowindow with the venue's information
      * @param {Venue} venue
      * @param {Integer} index
@@ -35,12 +11,13 @@ function initViewModel(venues, markers){
     this.showInfo = function(venue, index){
       
       // Put together photo url
+      var url;
       try{
         var photo = venue.photos.groups[0].items[0];
-        var url = photo.prefix + photo.width + 'x' + photo.height + photo.suffix;
+        url = photo.prefix + photo.width + 'x' + photo.height + photo.suffix;
       }
       catch(e){
-        var url = 'img/no-img.svg';
+        url = 'img/no-img.svg';
       }
       
       app.infoWindow.setContent(
@@ -59,6 +36,7 @@ function initViewModel(venues, markers){
      * @param {Event} e
      */
     this.filterVenues = function(vm, e){
+      this.selected(null);
       this.filteredVenues.splice(0);
       this.venues.forEach(function(venue, i){
         if(venue.name.toUpperCase().startsWith(e.target.value.toUpperCase())){
@@ -71,12 +49,11 @@ function initViewModel(venues, markers){
       });
       try{
         app.infoWindow.close();
-      }catch(e){}
+      }catch(error){}
     };
     
     var self = this;
-    this.searchMenu = $('#search-menu');
-    this.searchList = $('#search-list');
+    this.menuOn = ko.observable(null);
     this.venues = venues;
     this.filteredVenues = ko.observableArray();
     venues.forEach(function(venue){
@@ -88,20 +65,22 @@ function initViewModel(venues, markers){
       marker.addListener('click', (function(i){
         return function(e){
           self.selected(i);
-        }
+        };
       })(i));
     });
     // Set up selected observable and subscribers
-    this.selected = ko.observable(null);
+    this.selected = ko.observable(null).extend({notify: 'always'});
     this.selected.subscribe(function(oldVal){
-      if(oldVal != null)
+      if(oldVal !== null)
         self.markers[oldVal].setAnimation(null);
     }, null, 'beforeChange');
     this.selected.subscribe(function(newVal){
-      self.showInfo(self.venues[newVal], newVal);
+      if(newVal === null)
+        return;
+      self.showInfo(self.filteredVenues()[newVal], newVal);
       self.markers[newVal].setAnimation(google.maps.Animation.BOUNCE);
     });
-  };
+  }
   
   app.appViewModel = new AppViewModel(venues, markers);
   ko.applyBindings(app.appViewModel);
