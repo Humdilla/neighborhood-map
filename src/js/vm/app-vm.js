@@ -2,6 +2,20 @@ var app = app || {};
 
 function initViewModel(venues, markers){
   function AppViewModel(venues, markers){
+    /**
+     * @description Set up event listeners for markers
+     */
+    this.setupMarkers = function(){
+      this.filteredMarkers.forEach(function(marker, i){
+        google.maps.event.clearListeners(marker, 'click');
+        console.log(i);
+        marker.addListener('click', (function(i){
+          return function(e){
+            self.selected(i);
+          };
+        })(i));
+      });
+    }
     
     /**
      * @description Show an infowindow with the venue's information
@@ -25,7 +39,7 @@ function initViewModel(venues, markers){
           '<h2 class="iwindow-title">'+venue.name+'</h2>'+
           '<img src="'+url+'" class="iwindow-img">'+
         '</div>');
-      app.infoWindow.open(app.map, this.markers[index]);
+      app.infoWindow.open(app.map, this.filteredMarkers[index]);
       if(window.innerWidth < 600)
         self.menuOff();
     };
@@ -38,15 +52,18 @@ function initViewModel(venues, markers){
     this.filterVenues = function(vm, e){
       this.selected(null);
       this.filteredVenues.splice(0);
+      this.filteredMarkers = [];
       this.venues.forEach(function(venue, i){
         if(venue.name.toUpperCase().startsWith(e.target.value.toUpperCase())){
           self.filteredVenues.push(venue);
+          self.filteredMarkers.push(self.markers[i]);
           self.markers[i].setVisible(true);
         }
         else{
           self.markers[i].setVisible(false);
         }
       });
+      this.setupMarkers();
       try{
         app.infoWindow.close();
       }catch(error){}
@@ -60,25 +77,20 @@ function initViewModel(venues, markers){
       self.filteredVenues.push(venue);
     });
     this.markers = markers;
-    // Listen for clicks on markers
-    this.markers.forEach(function(marker, i){
-      marker.addListener('click', (function(i){
-        return function(e){
-          self.selected(i);
-        };
-      })(i));
-    });
+    this.filteredMarkers = markers;
+    this.setupMarkers();
     // Set up selected observable and subscribers
     this.selected = ko.observable(null).extend({notify: 'always'});
     this.selected.subscribe(function(oldVal){
       if(oldVal !== null)
-        self.markers[oldVal].setAnimation(null);
+        self.filteredMarkers[oldVal].setAnimation(null);
     }, null, 'beforeChange');
     this.selected.subscribe(function(newVal){
       if(newVal === null)
         return;
       self.showInfo(self.filteredVenues()[newVal], newVal);
-      self.markers[newVal].setAnimation(google.maps.Animation.BOUNCE);
+      self.filteredMarkers[newVal].setAnimation(google.maps.Animation.BOUNCE);
+      console.log(newVal);
     });
   }
   
