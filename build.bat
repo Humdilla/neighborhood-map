@@ -17,4 +17,6 @@ del dist\js\vm\*.js
 for %%f in (src\js\vm\*) do (
   curl -X POST -s --data-urlencode input@%%f -o dist\js\vm\%%~nf.js https://javascript-minifier.com/raw
 )
+:: Copy HTML file
+copy /Y src\index.html dist\index.html
 @echo on

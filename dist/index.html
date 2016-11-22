@@ -8,22 +8,20 @@
 </head>
 
 <body>
-  <div id="search-menu">
+  <nav data-bind="css: {'off-screen': !menuOn(), 'on-screen': menuOn()}" id="search-menu">
     <div id="search-content" class="off-screen">
       <input data-bind="event: {keyup: $root.filterVenues}" type="text" id="search-input" placeholder="Filter venues">
       <ul data-bind="foreach: filteredVenues" id="search-list">
-        <li data-bind="text: name, click: function(){$root.selected($index());}, css: {selected: $root.selected() == $index()}" class="search-item"></li>
+        <li data-bind="text: name, click: function(){$parent.selected($index());}, css: {selected: $parent.selected() == $index()}" class="search-item"></li>
       </ul>
     </div>
-    <div data-bind="click: toggleMenu" id="search-hamburger"></div>
-  </div>
-  <div id="map"></div>
-  <span id="footer">Powered by <a href="https://foursquare.com/">Foursquare</a></span>
+    <div data-bind="click: function(){menuOn(!menuOn());}" id="search-hamburger"></div>
+  </nav>
+  <main id="map"></main>
+  <footer>Powered by <a href="https://foursquare.com/">Foursquare</a></footer>
   
   <script defer src="js/lib/knockout-3.4.1.js"></script>
   <script defer src="js/lib/jquery-3.1.1.js"></script>
-  <script defer src="js/map.js"></script>
-  <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWec9GP8Gz3Mnu8S4gyt5DuPdmCScANXk&callback=initMap"></script>
   <script defer src="js/vm/app-vm.js"></script>
   <script defer src="js/main.js"></script>
 </body>
