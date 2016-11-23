@@ -8,7 +8,6 @@ function initViewModel(venues, markers){
     this.setupMarkers = function(){
       this.filteredMarkers.forEach(function(marker, i){
         google.maps.event.clearListeners(marker, 'click');
-        console.log(i);
         marker.addListener('click', (function(i){
           return function(e){
             self.selected(i);
@@ -41,7 +40,7 @@ function initViewModel(venues, markers){
         '</div>');
       app.infoWindow.open(app.map, this.filteredMarkers[index]);
       if(window.innerWidth < 600)
-        self.menuOff();
+        self.menuOn(false);
     };
     
     /**
@@ -90,7 +89,6 @@ function initViewModel(venues, markers){
         return;
       self.showInfo(self.filteredVenues()[newVal], newVal);
       self.filteredMarkers[newVal].setAnimation(google.maps.Animation.BOUNCE);
-      console.log(newVal);
     });
   }
   
